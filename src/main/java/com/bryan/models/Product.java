@@ -9,13 +9,15 @@ import java.util.UUID;
 public class Product {
     
     @Id
-    @SequenceGenerator(name = "product_id_sequence", sequenceName = "product_id_sequence")
-    @GeneratedValue(strategy = GenerationType.UUID, generator = "product_id_sequence")
-    private final UUID id;
-    private final String name;
-    private final Float price;
-    private final String src;
-    private final String alt;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
+    private String name;
+    private Float price;
+    private String src;
+    private String alt;
+    
+    public Product(){}
     
     public Product(UUID id, String name, float price, String src, String alt){
         this.id = id;
@@ -43,6 +45,26 @@ public class Product {
 
     public float getPrice() {
         return price;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPrice(Float price) {
+        this.price = price;
+    }
+
+    public void setSrc(String src) {
+        this.src = src;
+    }
+
+    public void setAlt(String alt) {
+        this.alt = alt;
     }
 
     @Override
