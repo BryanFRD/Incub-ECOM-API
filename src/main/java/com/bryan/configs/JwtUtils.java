@@ -15,7 +15,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
     
-    private String jwtSigningKey = "6EC4775363392D6388375554AB156DE1E97F8A4EB8A3AC9C4F24ECB1DA";
+    //TODO .env
+    private final String jwtSigningKey = "6EC4775363392D6388375554AB156DE1E97F8A4EB8A3AC9C4F24ECB1DA";
     
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);

@@ -1,12 +1,21 @@
 package com.bryan.models;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Entity
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 public class Account implements UserDetails {
     
     @Id
@@ -22,64 +31,14 @@ public class Account implements UserDetails {
     
     @ManyToMany
     @JoinTable(
-            name = "account_role",
             joinColumns = @JoinColumn(name = "id")
     )
+    @ToString.Exclude
     private List<Role> authorities;
-    
-    public Account(){}
-    
-    public Account(UUID id, String firstname, String lastname, String email, String password) {
-        this.id = id;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.email = email;
-        this.password = password;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
     
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return authorities;
     }
     
     @Override
@@ -110,13 +69,14 @@ public class Account implements UserDetails {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         Account account = (Account) o;
-        return Objects.equals(id, account.id) && Objects.equals(firstname, account.firstname) && Objects.equals(lastname, account.lastname) && Objects.equals(email, account.email) && Objects.equals(password, account.password);
+        return id != null && Objects.equals(id, account.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstname, lastname, email, password);
+        return getClass().hashCode();
     }
+    
 }

@@ -43,7 +43,6 @@ public class ApplicationConfig {
                 return accountRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("No account found"));
             }
         };
-        
     }
 
     @Bean

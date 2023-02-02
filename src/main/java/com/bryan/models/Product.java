@@ -1,83 +1,45 @@
 package com.bryan.models;
 
+import com.bryan.repositories.ProductTypeRepository;
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 public class Product {
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private UUID id;
     private String name;
     private Float price;
+    @Column(length = 5000)
     private String src;
     private String alt;
+    @ManyToOne
+    private ProductType productType;
     
-    public Product(){}
-    
-    public Product(UUID id, String name, float price, String src, String alt){
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.src = src;
-        this.alt = alt;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSrc() {
-        return src;
-    }
-
-    public String getAlt() {
-        return alt;
-    }
-
-    public float getPrice() {
-        return price;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPrice(Float price) {
-        this.price = price;
-    }
-
-    public void setSrc(String src) {
-        this.src = src;
-    }
-
-    public void setAlt(String alt) {
-        this.alt = alt;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         Product product = (Product) o;
-        return Float.compare(product.price, price) == 0 && Objects.equals(id, product.id) && Objects.equals(name, product.name) && Objects.equals(src, product.src) && Objects.equals(alt, product.alt);
+        return id != null && Objects.equals(id, product.id);
     }
-    
+
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, src, alt, price);
+        return getClass().hashCode();
     }
-    
 }

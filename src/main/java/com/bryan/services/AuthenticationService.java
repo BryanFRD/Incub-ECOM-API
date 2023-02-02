@@ -3,7 +3,9 @@ package com.bryan.services;
 import com.bryan.configs.CookieUtils;
 import com.bryan.configs.JwtUtils;
 import com.bryan.models.Account;
+import com.bryan.models.Role;
 import com.bryan.repositories.AccountRepository;
+import com.bryan.repositories.RoleRepository;
 import com.bryan.requests.AuthenticationRequest;
 import com.bryan.requests.RegisterRequest;
 import com.bryan.responses.AuthenticationResponse;
@@ -16,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,13 +30,17 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final CookieUtils cookieUtils;
+    private final RoleRepository roleRepository;
     
     public void register(RegisterRequest request){
         final Account account = new Account();
         account.setFirstname(request.firstname());
         account.setLastname(request.lastname());
         account.setEmail(request.email());
-
+        
+        Role role = roleRepository.findByAuthority("USER").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        account.setAuthorities(List.of(role));
+        
         String encodedPassword = passwordEncoder.encode(request.password());
         account.setPassword(encodedPassword);
         
@@ -45,7 +52,12 @@ public class AuthenticationService {
     }
     
     public AuthenticationResponse authenticate(AuthenticationRequest request){
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+        } catch (Exception ignored){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        
         final Account account = accountRepository.findByEmail(request.email()).orElseThrow(() -> {
             logout();
             return new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -62,16 +74,21 @@ public class AuthenticationService {
             logout();
             return new ResponseStatusException(HttpStatus.NOT_FOUND);
         });
-        final UUID userId = UUID.fromString(jwtUtils.extractUsername(cookieToken.getValue()));
+        final String token = cookieToken.getValue();
+        
+        final UUID userId = UUID.fromString(jwtUtils.extractUsername(token));
         final Account account = accountRepository.findById(userId).orElseThrow(() -> {
             logout();
             return new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         });
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(account.getUsername(), account.getPassword()));
         
-        final String token = jwtUtils.generateToken(account);
+        if(!jwtUtils.isTokenValid(token, account)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        
+        final String newToken = jwtUtils.generateToken(account);
 
-        cookieUtils.addCookie(cookieUtils.createAuthCookie(token));
+        cookieUtils.addCookie(cookieUtils.createAuthCookie(newToken));
         
         return new AuthenticationResponse(account.getId(), account.getFirstname(), account.getLastname(), account.getEmail(), account.getAuthorities());
     }

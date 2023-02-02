@@ -5,14 +5,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class CookieUtils {
     
     private final HttpServletRequest request;
@@ -41,9 +41,10 @@ public class CookieUtils {
     
     public Cookie createAuthCookie(String token){
         Cookie cookie = new Cookie("authToken", token);
-        cookie.setMaxAge((int) TimeUnit.HOURS.toSeconds(24));
+        cookie.setMaxAge(20000000);
         cookie.setSecure(false);
-        cookie.setHttpOnly(false);
+        cookie.setHttpOnly(true);
+        cookie.setAttribute("SameSite", "Strict");
         
         return cookie;
     }

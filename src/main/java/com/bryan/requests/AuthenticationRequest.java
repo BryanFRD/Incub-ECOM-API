@@ -1,5 +1,7 @@
 package com.bryan.requests;
 
-public record AuthenticationRequest(String email, String password) {
+import org.springframework.lang.NonNull;
+
+public record AuthenticationRequest(@NonNull String email, @NonNull String password) {
     
 }
